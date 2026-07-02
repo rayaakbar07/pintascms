@@ -38,6 +38,7 @@ export default function Navbar() {
                 Log Laporan
               </Link>
             )}
+      
             <Link href="https://drive.google.com/drive/folders/17KJxotosMYS1M5HIPxe80f300QDQQlsU?usp=share_link" className="text-sm text-slate-300 hover:text-white transition">Drive Pintas</Link>
 
             <button 

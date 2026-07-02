@@ -5,10 +5,18 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
+
 export default function Dashboard() {
   const [konten, setKonten] = useState<any[]>([]);
+  const [semuaIzin, setSemuaIzin] = useState<any[]>([]); // State untuk menyimpan semua data izin
   const [userName, setUserName] = useState("Pintas Team");
   const [userPhoto, setUserPhoto] = useState("/default-avatar.png");
+
+  
+  // State untuk form izin
+  const [alasan, setAlasan] = useState("");
+  const [tanggalIzin, setTanggalIzin] = useState("");
+  
   const router = useRouter();
 
   const totalKonten = konten.length;
@@ -25,6 +33,9 @@ export default function Dashboard() {
     { name: 'Proses Editing', total: kontenProsesEditing },
     { name: 'Publikasi', total: kontenPublikasi },
   ];
+
+  // Fungsi pengiriman izin (Diletakkan di luar useEffect)
+  
 
   useEffect(() => {
     async function fetchData() {
@@ -43,9 +54,10 @@ export default function Dashboard() {
           setUserPhoto(profileData.avatar_url);
         }
       }
-
-      const { data } = await supabase.from('pintas_content').select('*');
-      if (data) setKonten(data);
+      const { data: kontenData } = await supabase.from('pintas_content').select('*');
+      if (kontenData) setKonten(kontenData);
+      const { data: izinData } = await supabase.from('tambah_izin').select('*');
+      if (izinData) setSemuaIzin(izinData);
     }
     fetchData();
   }, [router]);
@@ -54,23 +66,18 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#0F111A] text-white p-8">
       <div className="max-w-6xl mx-auto space-y-6">
         
-        {/* HEADER DENGAN GAMBAR DINAMIS */}
         <div className="relative bg-blue-600 rounded-3xl p-8 flex items-center shadow-lg overflow-hidden h-40">
           <div className="flex-1 z-10">
             <h1 className="text-3xl font-bold">Good Day, {userName}!</h1>
             <p className="text-blue-100">Jaga produktivitas dan kualitas visual Anda hari ini.</p>
           </div>
-          
-          <div className="absolute right-10 -bottom-2 hidden md:block">
-            <img 
-              src={userPhoto} 
-              alt="Profile" 
-              className="h-40 object-contain drop-shadow-2xl" 
-            />
-          </div>
+          {userPhoto !== "/default-avatar.png" && (
+            <div className="absolute right-10 -bottom-2 hidden md:block">
+              <img src={userPhoto} alt="Profile" className="h-40 object-contain drop-shadow-2xl" />
+            </div>
+          )}
         </div>
 
-        {/* ANALITIK GRID */}
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           {[
             { label: 'Total', val: totalKonten, color: 'text-white' },
@@ -89,7 +96,6 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* GRAFIK & TUGAS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="col-span-2 bg-[#1C1F2E] border-slate-800 rounded-3xl p-6">
             <ResponsiveContainer width="100%" height={200}>
@@ -107,26 +113,22 @@ export default function Dashboard() {
 
           <div className="col-span-1 space-y-4">
             <h2 className="font-bold text-lg text-yellow-400">🔔 Tugas untuk Anda</h2>
-            {konten
-              .filter(item => {
+            {konten.filter(item => {
                 const isRaya = userName.toLowerCase() === 'raya';
                 return isRaya || item.pj_tugas?.toLowerCase() === userName.toLowerCase();
-              })
-              .slice(0, 3)
-              .map((item) => (
+              }).slice(0, 3).map((item) => (
                 <Card key={item.id} className="bg-[#1C1F2E] border-slate-800 rounded-2xl p-4 hover:border-yellow-500/50 transition">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-sm font-bold text-white">{item.title}</p>
                       <p className="text-[10px] text-slate-500">PJ: {item.pj_tugas || 'Belum di-assign'}</p>
                     </div>
-                    <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-1 rounded-full">
-                      {item.status}
-                    </span>
+                    <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-1 rounded-full">{item.status}</span>
                   </div>
                 </Card>
               ))
             }
+            
           </div>
         </div>
       </div>
