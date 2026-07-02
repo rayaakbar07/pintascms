@@ -1,10 +1,12 @@
 "use client";
+import { useRouter } from "next/navigation"; // Tambahkan import ini
 import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient"; // Sesuaikan path jika perlu
-import { useRouter } from "next/navigation"; // Tambahkan import ini
+
 
 export default function ValidasiPage() {
   const [izinPending, setIzinPending] = useState<any[]>([]);
+    const router = useRouter();
 
   // Fungsi untuk mengambil data izin yang masih Pending
   async function fetchPending() {
